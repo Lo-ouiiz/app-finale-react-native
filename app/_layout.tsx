@@ -6,6 +6,7 @@ import {
   Alert,
   BackHandler,
   Image,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -68,6 +69,23 @@ export default function RootLayout({
     }
   };
 
+  const sendSms = () => {
+    const phoneNumber = "0606060606";
+    const message = "Je n'aime pas les chats";
+
+    const url = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Alert.alert("Erreur", "Impossible d'ouvrir l'application SMS");
+        }
+      })
+      .catch((err) => console.error("Erreur SMS", err));
+  };
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
       {children}
@@ -77,7 +95,9 @@ export default function RootLayout({
           <MaterialCommunityIcons name="cat" size={100} color="#000" />
         )}
         {menuSelection === "Dog" && dogImageUrl && (
-          <Image source={{ uri: dogImageUrl }} style={styles.dogImage} />
+          <TouchableOpacity onPress={sendSms}>
+            <Image source={{ uri: dogImageUrl }} style={styles.dogImage} />
+          </TouchableOpacity>
         )}
       </View>
 
