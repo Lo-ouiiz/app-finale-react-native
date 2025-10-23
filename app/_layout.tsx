@@ -1,7 +1,8 @@
 import useBattery from "@/hooks/useBattery";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   BackHandler,
@@ -23,11 +24,28 @@ export default function RootLayout({
   const [menuSelection, setMenuSelection] = useState<string | null>(null);
   const [dogImageUrl, setDogImageUrl] = useState<string | null>(null);
 
+  const [chatCount, setChatCount] = useState(0);
+  const [dogCount, setDogCount] = useState(0);
+
+  useEffect(() => {
+    const loadCounts = async () => {
+      const savedChat = await AsyncStorage.getItem("chatCount");
+      const savedDog = await AsyncStorage.getItem("dogCount");
+      if (savedChat !== null) setChatCount(parseInt(savedChat));
+      if (savedDog !== null) setDogCount(parseInt(savedDog));
+    };
+    loadCounts();
+  }, []);
+
+  const saveCount = async (key: string, value: number) => {
+    await AsyncStorage.setItem(key, value.toString());
+  };
+
   const backgroundColor =
     batteryLevel !== null
       ? batteryLevel > 0.5
-        ? "#ADD8E6" // bleu clair
-        : "#FA8072" // saumon
+        ? "#ADD8E6"
+        : "#FA8072"
       : "#FFFFFF";
 
   const handleMenu = async (option: string) => {
@@ -35,13 +53,17 @@ export default function RootLayout({
 
     if (option === "Quit") {
       if (Platform.OS === "android") {
-        BackHandler.exitApp(); // Quitte l'app sur Android
+        BackHandler.exitApp();
       } else {
         Alert.alert("Quit", "Impossible de quitter l'application sur iOS");
       }
     }
 
     if (option === "Dog") {
+      const newCount = dogCount + 1;
+      setDogCount(newCount);
+      saveCount("dogCount", newCount);
+
       try {
         const response = await fetch("https://dog.ceo/api/breeds/image/random");
         const data = await response.json();
@@ -52,6 +74,10 @@ export default function RootLayout({
     }
 
     if (option === "Chat") {
+      const newCount = chatCount + 1;
+      setChatCount(newCount);
+      saveCount("chatCount", newCount);
+
       try {
         const { sound } = await Audio.Sound.createAsync(
           require("../assets/sounds/meow.mp3")
@@ -86,6 +112,13 @@ export default function RootLayout({
       .catch((err) => console.error("Erreur SMS", err));
   };
 
+  const resetCounts = async () => {
+    setChatCount(0);
+    setDogCount(0);
+    await saveCount("chatCount", 0);
+    await saveCount("dogCount", 0);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
       {children}
@@ -94,10 +127,22 @@ export default function RootLayout({
         {menuSelection === "Chat" && (
           <MaterialCommunityIcons name="cat" size={100} color="#000" />
         )}
+
         {menuSelection === "Dog" && dogImageUrl && (
           <TouchableOpacity onPress={sendSms}>
             <Image source={{ uri: dogImageUrl }} style={styles.dogImage} />
           </TouchableOpacity>
+        )}
+
+        {menuSelection === "Clicker" && (
+          <View style={styles.clickerContainer}>
+            <Text style={styles.clickerTitle}>Statistiques de clics</Text>
+            <Text style={styles.clickerText}>Chats cliqués : {chatCount}</Text>
+            <Text style={styles.clickerText}>Chiens cliqués : {dogCount}</Text>
+            <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
+              <Text style={styles.resetButtonText}>Réinitialiser</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -109,6 +154,7 @@ export default function RootLayout({
           <MaterialCommunityIcons name="cat" size={30} color="#fff" />
           <Text style={styles.menuText}>Chat</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => handleMenu("Dog")}
@@ -116,6 +162,15 @@ export default function RootLayout({
           <MaterialCommunityIcons name="dog" size={30} color="#fff" />
           <Text style={styles.menuText}>Dog</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => handleMenu("Clicker")}
+        >
+          <MaterialCommunityIcons name="counter" size={30} color="#fff" />
+          <Text style={styles.menuText}>Clicker</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => handleMenu("Quit")}
@@ -164,5 +219,29 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     marginTop: 4,
+  },
+  clickerContainer: {
+    alignItems: "center",
+    padding: 20,
+  },
+  clickerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  clickerText: {
+    fontSize: 18,
+    marginVertical: 5,
+  },
+  resetButton: {
+    backgroundColor: "#FF6347",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  resetButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
