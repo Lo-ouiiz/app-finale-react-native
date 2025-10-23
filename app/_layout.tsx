@@ -1,5 +1,6 @@
 import useBattery from "@/hooks/useBattery";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 import { useState } from "react";
 import {
   Alert,
@@ -46,6 +47,23 @@ export default function RootLayout({
         setDogImageUrl(data.message);
       } catch (e) {
         console.error("Erreur fetch dog", e);
+      }
+    }
+
+    if (option === "Chat") {
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require("../assets/sounds/meow.mp3")
+        );
+        await sound.playAsync();
+
+        sound.setOnPlaybackStatusUpdate((status) => {
+          if ("isLoaded" in status && status.isLoaded && status.didJustFinish) {
+            sound.unloadAsync();
+          }
+        });
+      } catch (e) {
+        console.error("Erreur lecture son chat", e);
       }
     }
   };
