@@ -2,6 +2,7 @@ import useBattery from "@/hooks/useBattery";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
+import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 export default function RootLayout({
   children,
@@ -23,6 +25,10 @@ export default function RootLayout({
   const batteryLevel = useBattery();
   const [menuSelection, setMenuSelection] = useState<string | null>(null);
   const [dogImageUrl, setDogImageUrl] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   const [chatCount, setChatCount] = useState(0);
   const [dogCount, setDogCount] = useState(0);
@@ -119,6 +125,33 @@ export default function RootLayout({
     await saveCount("dogCount", 0);
   };
 
+  useEffect(() => {
+    if (menuSelection === "Carte") {
+      (async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Permission refusée",
+            "La localisation est nécessaire pour afficher votre position."
+          );
+          return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      })();
+    }
+  }, [menuSelection]);
+
+  const mapRegion = {
+    latitude: 46,
+    longitude: 4,
+    latitudeDelta: 8,
+    longitudeDelta: 6,
+  };
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
       {children}
@@ -142,6 +175,32 @@ export default function RootLayout({
             <TouchableOpacity style={styles.resetButton} onPress={resetCounts}>
               <Text style={styles.resetButtonText}>Réinitialiser</Text>
             </TouchableOpacity>
+          </View>
+        )}
+
+        {menuSelection === "Carte" && (
+          <View style={{ flex: 1, width: "100%", height: "100%" }}>
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={{ flex: 1 }}
+              initialRegion={mapRegion}
+            >
+              <Marker
+                coordinate={{ latitude: 48.8566, longitude: 2.3522 }}
+                title="Paris"
+              />
+              <Marker
+                coordinate={{ latitude: 43.1242, longitude: 5.928 }}
+                title="Toulon"
+              />
+              {userLocation && (
+                <Marker
+                  coordinate={userLocation}
+                  title="Vous êtes ici"
+                  pinColor="blue"
+                />
+              )}
+            </MapView>
           </View>
         )}
       </View>
@@ -169,6 +228,14 @@ export default function RootLayout({
         >
           <MaterialCommunityIcons name="counter" size={30} color="#fff" />
           <Text style={styles.menuText}>Clicker</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => handleMenu("Carte")}
+        >
+          <MaterialCommunityIcons name="map" size={30} color="#fff" />
+          <Text style={styles.menuText}>Carte</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
