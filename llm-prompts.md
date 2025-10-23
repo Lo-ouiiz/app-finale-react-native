@@ -17,3 +17,9 @@ Par contre, cette méthode a aussi des inconvénients :
 Quand j'ai rédigé les prompts, j'ai essayé de fournir un contexte assez complet et précis. J'essayais de lui donner toutes les infos nécessaires pour qu'il comprenne ce que j'attendais de lui.
 Il fallait un peu anticiper tout ce qui était incompréhensions et structurer les demandes pour que ses réponses soient pertinentes.
 Quand les réponses de Chat ne correspondaient pas totalement à mes attentes, je reformulais les prompts ou j'ajoutais des détails pour le guider un peu mieux.
+
+Donc pour résumer ma manière de procéder :
+
+- demander une fonctionnalité avec le contexte précédant ou le contexte de base pour le 1er prompt
+- si ok, demander à l'intégrer dans le fichier du projet / si erreur ou incompréhension, reformuler ou donner l'erreur pour avancer
+- recommencer pour chaque fonctionnalité
