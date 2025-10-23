@@ -1,7 +1,16 @@
 import useBattery from "@/hooks/useBattery";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  BackHandler,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function RootLayout({
   children,
@@ -23,9 +32,11 @@ export default function RootLayout({
     setMenuSelection(option);
 
     if (option === "Quit") {
-      // Android uniquement
-
-      (global as any).expo?.exitApp?.();
+      if (Platform.OS === "android") {
+        BackHandler.exitApp(); // Quitte l'app sur Android
+      } else {
+        Alert.alert("Quit", "Impossible de quitter l'application sur iOS");
+      }
     }
 
     if (option === "Dog") {
@@ -43,7 +54,6 @@ export default function RootLayout({
     <View style={[styles.container, { backgroundColor }]}>
       {children}
 
-      {/* Contenu dynamique */}
       <View style={styles.content}>
         {menuSelection === "Chat" && (
           <MaterialCommunityIcons name="cat" size={100} color="#000" />
@@ -53,25 +63,27 @@ export default function RootLayout({
         )}
       </View>
 
-      {/* Menu bas */}
       <View style={styles.bottomMenu}>
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => handleMenu("Chat")}
         >
           <MaterialCommunityIcons name="cat" size={30} color="#fff" />
+          <Text style={styles.menuText}>Chat</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => handleMenu("Dog")}
         >
           <MaterialCommunityIcons name="dog" size={30} color="#fff" />
+          <Text style={styles.menuText}>Dog</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => handleMenu("Quit")}
         >
           <MaterialCommunityIcons name="exit-to-app" size={30} color="#fff" />
+          <Text style={styles.menuText}>Quit</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -93,7 +105,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 70,
+    height: 80,
     backgroundColor: "#333",
     flexDirection: "row",
     justifyContent: "space-around",
@@ -109,5 +121,10 @@ const styles = StyleSheet.create({
   menuItem: {
     flex: 1,
     alignItems: "center",
+  },
+  menuText: {
+    color: "#fff",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
