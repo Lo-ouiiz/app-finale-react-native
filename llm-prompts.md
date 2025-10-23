@@ -2,6 +2,8 @@
 
 Pour implémenter les différentes fonctionnalités de l'app, j'ai choisi de créer un fil de conversation unique avec ChatGPT que j'ai conservé pour tout le projet.
 
+Lien vers le chat : [Conversation ChatGPT](https://chatgpt.com/share/68fa38be-71ec-8012-84cb-d640c73c9ae9)
+
 Cette manière de faire a plusieurs avantages :
 
 - elle permet à Chat de garder en mémoire les fonctionnalités ajoutées juste avant, donc il était plus facile d'intégrer les nouvelles fonctionnalités
