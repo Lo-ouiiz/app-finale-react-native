@@ -24,7 +24,12 @@
         "googleMaps": {
           "apiKey": "AIzaSyDaEW1I8k0yR22vLb1POlQR1DLifG2fnV4"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.lo_ouiiz.appfinalereactnative"
     },
     "web": {
       "output": "static",
@@ -54,6 +59,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "504c2050-6fe4-4644-a63d-bf7e724dbc6b"
+      }
     }
   }
 }
